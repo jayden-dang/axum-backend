@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       C2131FE3-866E-4347-AB89-786CE17D5814
+:END:
+#+TITLE: Project 6 - RPC: Cross Language calls (Go - Rust)
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com

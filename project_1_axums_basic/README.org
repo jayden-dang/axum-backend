@@ -1,0 +1,610 @@
+:PROPERTIES:
+:ID:       F286CFE2-F0EC-46D6-8279-E5130142EDDA
+:END:
+#+TITLE: Project 1 - Axum's Basic
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com
+#+startup: indent
+#+export_file_name: index.html
+#+SETUPFILE: ~/theme-readtheorg.setup
+#+HTML_HEAD: <style>pre.src{background:#343131;color:white;} </style>
+#+DESCRIPTION: This chapter focuses on the axum responses
+#+html_head: <style>pre.src{background:#343131;color:white;max-height:500px;overflow-y:auto;} </style>
+#+html_head: <style>p{margin-bottom:1em;}</style>
+#+html_head: <style>h2{padding-top:1em;margin-top:2em;border-top:darkgray 2px solid;}</style>
+#+html_head: <style>h3{padding-top:1em;margin-top:2em;border-top:lightblue 1px dashed;}</style>
+#+html_head: <style>h4{padding-top:1em;margin-bottom:1em;}</style>
+#+html_head: <style>h5{color:black;font-size:1em;padding-top:1em;margin-bottom:1em;} </style>
+#+html_head: <style>div.response>h5,div.request>h5{padding-top:0;margin-bottom:0.5em;color:darkgray;font-size:0.8em;}</style>
+#+html_head: <style>h6{margin-bottom:1em;}</style>
+
+* Table of Contents :TOC:
+- [[#introduction][Introduction]]
+- [[#officially-provided-response][Officially Provided Response]]
+  - [[#plain-text][Plain Text]]
+  - [[#status-code][Status Code]]
+  - [[#response-headers][Response headers]]
+  - [[#with-response-headers--status][with response headers & status]]
+  - [[#html][HTML]]
+  - [[#json][JSON]]
+  - [[#result][Result]]
+- [[#custom-response][Custom Response]]
+  - [[#struct][Struct]]
+  - [[#custom-the-error-response][Custom the Error Response]]
+- [[#request][Request]]
+  - [[#get-parameter-path][Get Parameter =Path=]]
+  - [[#tuple-path][Tuple Path]]
+  - [[#struct-path][Struct Path]]
+  - [[#query-args][Query Args]]
+  - [[#query-default][Query Default]]
+  - [[#query-all][Query all]]
+  - [[#get-form-input][Get form input]]
+  - [[#post-json][Post Json]]
+  - [[#get-header-data][Get header data]]
+
+* Introduction
+#+begin_quote
++ This Repository will focus on how Axum handles responses & requests.
++ Axum provides various response/request types, such as plain text, HTML,JSON, and custom responses/request headers.
++ In addition to these built-it responses/request, we'll also explore how to return our own defined structs as responses to the client.
+#+end_quote
+
++ One of the core priciples of Axum's Response handling is the [[https://docs.rs/axum/0.2.8/axum/response/trait.IntoResponse.html][Implement IntoResponse]] - The idea is that any type that implements this trait can be returned from a handler function as a response. Axum has already implemented this trait for several commonly used data types, which mean that these data types can be returned directly as a response to a request. [[https://docs.rs/axum/0.2.8/axum/#building-responses][Building Responses]]
+
+#+begin_src rust
+pub trait IntoResponse {
+    type Body: Body<Data = Bytes, Error = Self::BodyError> + Send + Sync + 'static;
+    type BodyError: Into<BoxError>;
+    fn into_response(self) -> Response<Self::Body>;
+}
+#+end_src
+
+#+name: api-url
+: http://localhost:9527
+
+* Officially Provided Response
+** Plain Text
++ Responses
+#+begin_src rust
+async fn plain_text() -> &str {
+  "Hello Eamon"
+}
+
+async fn string_res() -> String {
+  "Hello Eamon".to_string()
+}
+#+end_src
+
++ API Entrypoint
+#+begin_src restclient :var api=api-url
+GET :api/responses/plain_str
+#+end_src
+
+#+begin_src restclient :var api=api-url
+GET :api/responses/plain_string
+#+end_src
+
++ Responses
+#+BEGIN_SRC text
+Hello Eamon from str!!!
+GET http://localhost:9527/responses/plain_str
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+content-length: 23
+date: Thu, 06 Jul 2023 02:12:25 GMT
+Request duration: 0.004682s
+#+END_SRC
+
+#+BEGIN_SRC text
+Hello Eamon from string!!!
+GET http://localhost:9527/responses/plain_string
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+content-length: 26
+date: Thu, 06 Jul 2023 02:12:31 GMT
+Request duration: 0.002634s
+#+END_SRC
+
+** Status Code
++ Code
+#+begin_src rust
+async fn status_code() -> StatusCode {
+  StatusCode::NOT_FOUND
+}
+#+end_src
++ Api Entrypoint
+#+begin_src restclient :var api=api-url
+GET :api/responses/status_code
+#+end_src
+
++ Responses
+#+BEGIN_SRC js
+// GET http://localhost:9527/responses/status_code
+// HTTP/1.1 404 Not Found
+// content-length: 0
+// date: Thu, 06 Jul 2023 02:14:42 GMT
+// Request duration: 0.002835s
+#+END_SRC
+
+** Response headers
++ Code
+#+begin_src rust
+async fn with_header() -> (HeaderMap, &'static str) {
+  let mut headers = HeaderMap::new();
+  headers.insert(
+    HeaderName::from_static("x-powered"),
+    HeaderValue::from_static("eamondang.rs")
+  );
+  (headers, "eamondang.rs")
+}
+#+end_src
+
++ API Entry Point
+#+begin_src restclient :var api=api-url :results header
+GET :api/responses/with_header
+#+end_src
+
++ Responses
+#+BEGIN_SRC text
+eamondang.com
+GET http://localhost:9527/responses/with_header
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+x-powered: eamondang.com
+content-length: 13
+date: Thu, 06 Jul 2023 02:14:55 GMT
+Request duration: 0.002575s
+#+END_SRC
+
+** with response headers & status
++ Code
+#+begin_src rust
+async fn header_with_statuc() -> (StatusCode, HeaderMap, &'static str) {
+  let mut headers = HeaderMap::new();
+  headers.insert(
+    HeaderName::from_static("x-powered"),
+    HeaderValue::from_static("eamondang.rs")
+  );
+  (StatusCode::OK ,headers, "eamondang.rs")
+}
+#+end_src
+
++ Api Entry Point
+#+BEGIN_SRC restclient :var api=api-url :results header
+GET :api/responses/header_status
+#+END_SRC
+
++ Result
+#+BEGIN_SRC text
+eamondang.com
+GET http://localhost:9527/responses/header_status
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+x-powered: eamondang.com
+content-length: 13
+date: Thu, 06 Jul 2023 02:16:32 GMT
+Request duration: 0.003775s
+#+END_SRC
+
+** HTML
++ Code
+#+begin_src rust
+async fn html_response() -> Html<&'static str> {
+    Html("Hello, <h1 style={{color: red}}>https://eamondang.com</h1>")
+}
+#+end_src
+
++ API Entry Point
+#+BEGIN_SRC restclient :var api=api-url :results html
+GET :api/responses/html_res
+#+END_SRC
+
++ Response
+#+begin_export html
+,#+BEGIN_SRC web
+<h2 style="color:red">https://eamondang.com</h2>
+<!-- GET http://localhost:9527/responses/html_res
+     HTTP/1.1 200 OK
+     content-type: text/html; charset=utf-8
+     content-length: 48
+     date: Thu, 06 Jul 2023 02:18:08 GMT
+     Request duration: 0.001075s -->
+,#+END_SRC
+#+end_export
+
+** JSON
++ Code
++ cargo add serde_json
+#+begin_src rust
+async fn json() -> Json<serde_json::Value> {
+    Json(serde_json::json!({"domain": "https://eamondang.rs"}))
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url :results json
+GET :api/responses/json_res
+#+END_SRC
+
++ Response
+#+BEGIN_SRC js
+{
+  "domain": "https://eamondang.com"
+}
+// GET http://localhost:9527/responses/json_res
+// HTTP/1.1 200 OK
+// content-type: application/json
+// content-length: 34
+// date: Thu, 06 Jul 2023 02:18:38 GMT
+// Request duration: 0.002136s
+#+END_SRC
+
+** Result
++ Code
+#+begin_src rust
+async fn result() -> Result<&'static str, StatusCode>  {
+  let flag = false;
+  match flag {
+    true => return Ok("Hello eamondang.rs"),
+    false => return Err(StatusCode::INTERVAL_SERVER_ERROR),
+  };
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+POST :api/responses/result_res
+#+END_SRC
+
++ Response
+#+BEGIN_SRC js
+// POST http://localhost:9527/responses/result_res
+// HTTP/1.1 405 Method Not Allowed
+// allow: GET,HEAD
+// content-length: 0
+// date: Thu, 06 Jul 2023 02:19:10 GMT
+// Request duration: 0.001613s
+#+END_SRC
+
+* Custom Response
+** Struct
++ Code
++ cargo add serde -F derive
+#+begin_src rust
+#[derive(Serialize)]
+struct Info {
+    web_site: String,
+    email: String,
+    level: i32,
+}
+
+async fn info_struct() -> Json<Info> {
+    let info = Info {
+        web_site: "https://axum.rs".to_string(),
+        email: "team@axum.rs".to_string(),
+        level: 123,
+    };
+    Json(info)
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+GET :api/responses/info_struct
+#+END_SRC
+
++ Resposne
+#+BEGIN_SRC js
+{
+  "web_site": "https://eamondang.com",
+  "email": "eamondang@gmail.com"
+}
+// GET http://localhost:9527/responses/info_struct
+// HTTP/1.1 200 OK
+// content-type: application/json
+// content-length: 66
+// date: Thu, 06 Jul 2023 02:19:42 GMT
+// Request duration: 0.002540s
+#+END_SRC
+
+** Custom the Error Response
++ In the Axum Response, as you know the error return here is Body Error & we can customize it.
+#+begin_src rust
+impl IntoResponse for AppError {
+    type Body = Full<Bytes>;
+    type BodyError = Infallible;
+
+    fn into_response(self) -> axum::http::Response<Self::Body> {
+        self.message.into_response()
+    }
+}
+#+end_src
+
+* Request
+** Get Parameter =Path=
++ Code
+#+begin_src rust
+async fn user_info(Path(id): Path<String>) -> String  {
+  format!("User info for {}", id)
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+GET :api/request/get_user/eamondang
+#+END_SRC
+
++ Response
+#+BEGIN_SRC text
+Information of user has id: eamondang
+GET http://localhost:9527/request/get_user/eamondang
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+content-length: 37
+date: Thu, 06 Jul 2023 02:22:28 GMT
+Request duration: 0.001483s
+#+END_SRC
+
+** Tuple Path
++ Code
+#+begin_src rust
+async fn get_user_tuple(Path((id, name)): Path<(String, String)>) -> String {
+  format!("Information of user has id: {} & Username is: {}", id, name)
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+GET :api/request/user_tuple/eamon/dangquangvu
+#+END_SRC
+
++ Response
+#+BEGIN_SRC text
+Information of user has id: eamon & Username is: dangquangvu
+GET http://localhost:9527/request/user_tuple/eamon/dangquangvu
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+content-length: 60
+date: Thu, 06 Jul 2023 02:23:08 GMT
+Request duration: 0.002298s
+#+END_SRC
+
+** Struct Path
++ Code
+#+begin_src rust
+#[derive(Serialize, Deserialize)]
+struct Info {
+  id: i32,
+  username: String,
+}
+
+async fn struct_path(Path(info): Path<Info>) -> Json<Info> {
+  let res = Info { id: info.id, username: info.username };
+  Json(res)
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+GET :api/request/struct_path/2111/eamondang
+#+END_SRC
+
++ Response
+#+BEGIN_SRC js
+{
+  "id": 2111,
+  "username": "eamondang"
+}
+// GET http://localhost:9527/request/struct_path/2111/eamondang
+// HTTP/1.1 200 OK
+// content-type: application/json
+// content-length: 34
+// date: Thu, 06 Jul 2023 02:23:32 GMT
+// Request duration: 0.001456s
+#+END_SRC
+
+** Query Args
++ Code
+#+begin_src rust
+async fn query_arg(Query(info): Query<Info>) -> Json<Info> {
+  let res = Info { id: info.id, username: info.username };
+  Json(res)
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+GET :api/request/query_args?id=011&username=eamondang
+#+END_SRC
+
++ Response
+#+BEGIN_SRC js
+{
+  "id": 11,
+  "username": "eamondang"
+}
+// GET http://localhost:9527/request/query_args?id=011&username=eamondang
+// HTTP/1.1 200 OK
+// content-type: application/json
+// content-length: 32
+// date: Thu, 06 Jul 2023 02:25:16 GMT
+// Request duration: 0.002455s
+#+END_SRC
+
+** Query Default
++ Code
+#+begin_src rust
+#[derive(Serialize, Deserialize)]
+struct OptInfo {
+  page: Option<i32>,
+  keyword: Option<String>,
+}
+
+async fn query_opt(Query(info): Query<OptInfo>) -> Json<OptInfo> {
+  Json(OptInfo { page: info.page, keyword: info.keyword })
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+GET :api/request/query_opt?page=1&keyword=hello
+#+END_SRC
+
++ Response
+#+BEGIN_SRC js
+{
+  "page": 1,
+  "keyword": "hello"
+}
+// GET http://localhost:9527/request/query_opt?page=1&keyword=hello
+// HTTP/1.1 200 OK
+// content-type: application/json
+// content-length: 28
+// date: Thu, 06 Jul 2023 02:24:28 GMT
+// Request duration: 0.001585s
+#+END_SRC
+
++ Query with Option (default value)
+#+BEGIN_SRC restclient :var api=api-url
+GET :api/request/query_opt
+#+END_SRC
+
++ Response
+#+BEGIN_SRC js
+{
+  "page": 0,
+  "keyword": ""
+}
+// GET http://localhost:9527/request/query_opt
+// HTTP/1.1 200 OK
+// content-type: application/json
+// content-length: 23
+// date: Thu, 06 Jul 2023 02:24:58 GMT
+// Request duration: 0.001977s
+#+END_SRC
+
+** Query all
++ Code
+#+begin_src rust
+async fn query_all(Query(info): Query<HashMap<String, String>>) -> String {
+  format!("{:?}", info)
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+GET :api/request/query_all?name=hello&email=eamondang@gmail.com&account_id=eamon.near
+#+END_SRC
+
++ Response
+#+BEGIN_SRC text
+{"name": "hello", "account_id": "eamon.near", "email": "eamondang@gmail.com"}
+GET http://localhost:9527/request/query_all?name=hello&email=eamondang@gmail.com&account_id=eamon.near
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+content-length: 77
+date: Thu, 06 Jul 2023 02:25:43 GMT
+Request duration: 0.002364s
+#+END_SRC
+
+** Get form input
++ Code
+#+begin_src rust
+#[derive(Deserialize)]
+pub struct CreateUser {
+    pub username: String,
+    pub email: String,
+    pub level: u8,
+}
+
+#[derive(Serialize)]
+pub struct CreateUserRespon {
+  pub username: String,
+  pub email: String,
+}
+
+async fn create_user(Form(user): Form<CreateUser>) -> Json<CreateUserRespon> {
+  Json(CreateUserRespon { username: user.username, email: user.email })
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+POST :api/request/create_user
+Content-Type: application/x-www-form-urlencoded
+username=eamon&email=eamondang@gmail.com&password=123123
+#+END_SRC
+
++ Response
+#+BEGIN_SRC js
+{
+  "username": "eamon",
+  "email": "eamondang@gmail.com",
+  "bio": null
+}
+// POST http://localhost:9527/request/create_user
+// HTTP/1.1 200 OK
+// content-type: application/json
+// content-length: 61
+// date: Thu, 06 Jul 2023 02:26:20 GMT
+// Request duration: 0.000982s
+#+END_SRC
+
+** Post Json
++ Code
+#+begin_src rust
+async fn create_user_json(Json(user): Json<CreateUser>) -> Json<CreateUserRespon> {
+  Json(CreateUserRespon { username: user.username, email: user.email })
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url
+POST :api/request/create_user_json
+Content-Type: application/json
+{
+  "username" : "eamon",
+  "email" : "eamondang@gmail.com",
+  "password" : "123123"
+}
+#+END_SRC
+
++ Response
+#+BEGIN_SRC js
+{
+  "username": "eamon",
+  "email": "eamondang@gmail.com",
+  "bio": "http://eamondang.com/profile/eamon"
+}
+// POST http://localhost:9527/request/create_user_json
+// HTTP/1.1 200 OK
+// content-type: application/json
+// content-length: 93
+// date: Thu, 06 Jul 2023 02:26:40 GMT
+// Request duration: 0.038237s
+#+END_SRC
+
+** Get header data
++ Code
+#+begin_src rust
+async fn get_user_agent(headers: HeaderMap) -> String {
+  headers.get(header::USER_AGENT).and_then(|v| v.to_str().ok()).map(|v| v.to_string()).unwrap()
+}
+#+end_src
+
++ API Entrypoint
+#+BEGIN_SRC restclient :var api=api-url :results pure
+GET :api/request/get_user_agent
+User-Agent: Eamon from Emacs
+#+end_src
+
++ Response
+#+BEGIN_SRC text
+Eamon from Emacs
+GET http://localhost:9527/request/get_user_agent
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+content-length: 16
+date: Thu, 06 Jul 2023 02:27:02 GMT
+Request duration: 0.003330s
+#+END_SRC

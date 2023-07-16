@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       E27B207E-1FE4-4D23-8E30-DADB4D93096B
+:END:
+#+TITLE: Project 13 - Distributed Marketplace Web3
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com

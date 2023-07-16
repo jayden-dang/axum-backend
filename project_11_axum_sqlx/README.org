@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       BF291272-4A11-436D-9674-6F8E1B7831A8
+:END:
+#+TITLE: Project 11 - Axum & SQLx
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com

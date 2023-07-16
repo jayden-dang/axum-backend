@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       2210CBE7-9D9E-4428-97F6-F9A79AA8BF53
+:END:
+#+TITLE: Project 3 - Short link Service
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com

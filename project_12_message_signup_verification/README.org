@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       6EDFC38F-3DFB-4EF0-A72C-61E81C900379
+:END:
+#+TITLE: Project 12 - Message SignUp Verification
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com

@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID:       A6B3D9A5-8C4A-449A-87C6-7B4D21FA4042
+:END:
+#+TITLE: Axum Courses
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com
+
++ [[./project_1_axums_basic/README.org][Project 1 - Axum's Basic]]
++ [[./project_2_todo_service/README.org][Project 2 - Todo Service]]
++ [[./project_3_short_link_service/README.org][Project 3 - Short link Service]]
++ [[./project_4_blogging_system/README.org][Project 4 - Blogging System]]
++ [[./project_5_telegram_bot/README.org][Project 5 - Telegram Bot]]
++ [[./project_6_rpc_cross_language_calls_go_rust/README.org][Project 6 - RPC: Cross Language calls (Go - Rust)]]
++ [[./project_7_seaorm/README.org][Project 7 - SeaORM]]
++ [[./project_8_citus_distributed_postgresql/README.org][Project 8 - Citus - Distributed PostgreSQL]]
++ [[./project_9_distributed_blogging_system/README.org][Project 9 - Distributed Blogging System]]
++ [[./project_10_microservices_with_consul/README.org][Project 10 - Microservices with Consul]]
++ [[./project_11_axum_sqlx/README.org][Project 11 - Axum & SQLx]]
++ [[./project_12_message_signup_verification/README.org][Project 12 - Message SignUp Verification]]
++ [[./project_13_distributed_marketplace_web3/README.org][Project 13 - Distributed Marketplace Web3]]

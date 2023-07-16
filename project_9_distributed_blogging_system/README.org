@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       B9B04239-3EAE-49D7-851A-0AAD6E91D990
+:END:
+#+TITLE: Project 9 - Distributed Blogging System
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com

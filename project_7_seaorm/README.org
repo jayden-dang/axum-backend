@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       8738023D-3E77-47AA-BD8F-7CBA524F8F58
+:END:
+#+TITLE: Project 7 - SeaORM
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com

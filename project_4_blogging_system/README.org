@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       FF21F944-E977-45DB-B97E-0FAAE1CB287C
+:END:
+#+TITLE: Project 4 - Blogging System
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com

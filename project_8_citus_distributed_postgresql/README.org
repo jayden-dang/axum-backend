@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       FC3A9D01-882E-4958-A6A2-83CF2A6E9B17
+:END:
+#+TITLE: Project 8 - Citus - Distributed PostgreSQL
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com
